@@ -27,7 +27,9 @@ var SubjectLoader = (function() {
             `<li class="item">
                <i class="fa fa-file-pdf-o fa-4x"></i>
                <span class="item-name">
-                 ${file.name}
+                 <a href="https://drive.google.com/open?id=${file.id}" target="_blank">
+                   ${file.name}
+                 </a>
                </span>
              </li>`).join('\n')}
         </ul>
@@ -67,6 +69,9 @@ var SubjectLoader = (function() {
       })
       return Promise.all(subjectsPromises)
     })
+    .catch(err => {
+      return err
+    })
   }
 
   var _loadSubjectList = function() {
@@ -86,6 +91,9 @@ var SubjectLoader = (function() {
         }
       }
     })
+    .catch(err => {
+      return err
+    })
   }
 
   var dropDown = function() {
@@ -102,12 +110,45 @@ var SubjectLoader = (function() {
     }
   }
 
+  var _spinner2 = function() {
+    var spinnerDiv = `
+  <div class="sk-circle">
+    <div class="sk-circle1 sk-child"></div>
+    <div class="sk-circle2 sk-child"></div>
+    <div class="sk-circle3 sk-child"></div>
+    <div class="sk-circle4 sk-child"></div>
+    <div class="sk-circle5 sk-child"></div>
+    <div class="sk-circle6 sk-child"></div>
+    <div class="sk-circle7 sk-child"></div>
+    <div class="sk-circle8 sk-child"></div>
+    <div class="sk-circle9 sk-child"></div>
+    <div class="sk-circle10 sk-child"></div>
+    <div class="sk-circle11 sk-child"></div>
+    <div class="sk-circle12 sk-child"></div>
+  </div>
+    `
+    document.querySelector('main').innerHTML = spinnerDiv
+  }
+
   var _loadFiles = function(evt) {
     var id = this.dataset.id
+    var subjName = this.dataset.name
     var folderPromises = []
     var folderNames = []
+
+    if(document.querySelector('.modal')) {
+      var modal = document.querySelector('.modal')
+      var departments = document.querySelector('.departments')
+      var sidebar = document.querySelector('.sidebar')
+
+      sidebar.appendChild(departments)
+      departments.classList.toggle('open')
+      modal.parentNode.removeChild(modal)
+    }
+
     _retrieveData(`${URL}/files/${id}/children`)
       .then(res => {
+        _spinner2()
         var folders = JSON.parse(res).files
         folders.sort(_sorter)
         folders.map(folder => {
@@ -118,6 +159,11 @@ var SubjectLoader = (function() {
       })
       .then(res => {
         var mainBody = ''
+        mainBody += `
+        <div class="subjectTitleWrapper">
+          <h2 class="subjectTitle">${subjName}</h2>
+        </div>
+        `
         var files = res.map((file, idx, arr) => {
           mainBody += _buildFolderView(
             JSON.parse(file),
@@ -133,10 +179,6 @@ var SubjectLoader = (function() {
     var loader = document.querySelector('.spin_wrapper')
     loader.classList.toggle('hidden')
 
-    /**
-     *
-     * n => Array of subjects grouped by department
-     */
     var n = res.map((curr, idx, arr) => JSON.parse(curr))
     n.map((curr, idx, arr) => {
       var subjects = curr.files
@@ -145,6 +187,7 @@ var SubjectLoader = (function() {
         var li = document.createElement('li')
         li.classList.add('subject')
         li.innerHTML = subj.name
+        li.setAttribute('data-name', subj.name)
         li.setAttribute('data-id', subj.id)
         li.addEventListener('click', _loadFiles)
         departments[idx]
@@ -189,6 +232,7 @@ var createModal = function() {
 
   document.querySelector('body').appendChild(m)
 }
+
 
 window.onload = function() {
   SubjectLoader.getSubjects()
