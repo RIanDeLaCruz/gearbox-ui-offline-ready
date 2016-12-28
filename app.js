@@ -135,6 +135,7 @@ var SubjectLoader = (function() {
     var subjName = this.dataset.name
     var folderPromises = []
     var folderNames = []
+    this.classList.add('open-subject')
 
     if(document.querySelector('.modal')) {
       var modal = document.querySelector('.modal')

@@ -98,6 +98,10 @@ header {
   color: black;
 }
 
+.open-subject {
+  background-color: #fabe6b;
+}
+
 .open {
   display: block !important;
 }
@@ -161,6 +165,11 @@ main {
   display: block;
   margin: 1em 0;
   white-space: normal;
+}
+
+.item-name a {
+  color: black;
+  text-decoration: none;
 }
 
 @media (max-width: 960px) {
