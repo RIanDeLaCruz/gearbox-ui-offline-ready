@@ -226,7 +226,7 @@ main {
   background-color: white;
   width: 96%;
   height: 96%;
-  position: absolute;
+  position: fixed;
   top: 2%;
   left: 2%;
   overflow: auto;
@@ -258,6 +258,8 @@ main {
   background-color: orange;
   display: flex;
   align-items: center;
+  flex-direction: column;
+  justify-content: center;
 }
 
 .spinner {

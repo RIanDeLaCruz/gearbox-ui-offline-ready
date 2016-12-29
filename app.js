@@ -241,4 +241,15 @@ window.onload = function() {
 
     document.querySelector('body').appendChild(m)
   }
+  if('serviceWorker' in navigator) {
+    navigator.serviceWorker.register(
+      'sw.js',
+      {scope: '/'})
+      .then(reg => {
+        console.log(`SUCCESS: ${reg.scope}`)
+      })
+      .catch(err => {
+        console.log(`ERR: ${err}`)
+      })
+  }
 }
