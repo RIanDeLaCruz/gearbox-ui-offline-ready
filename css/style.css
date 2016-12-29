@@ -167,9 +167,15 @@ main {
   white-space: normal;
 }
 
-.item-name a {
+.item a {
   color: black;
   text-decoration: none;
+}
+
+.item a:hover {
+  text-decoration: underline;
+  color: #2EC4B6;
+  color: var(--green);
 }
 
 @media (max-width: 960px) {

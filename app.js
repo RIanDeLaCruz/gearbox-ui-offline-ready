@@ -17,27 +17,7 @@ var _sorter = function(a, b) {
 var SubjectLoader = (function() {
   const URL = 'http://gearboxdev.iandelacruz.me'
 
-  var _buildFolderView = function(folderObj, name) {
-    var files = folderObj.files.sort(_sorter)
-    let filesTemplate = `
-      <div class="folders">
-        <h1 class="foldername">${name}</h1>
-        <ul class="items">
-          ${files.map(file =>
-            `<li class="item">
-               <i class="fa fa-file-pdf-o fa-4x"></i>
-               <span class="item-name">
-                 <a href="https://drive.google.com/open?id=${file.id}" target="_blank">
-                   ${file.name}
-                 </a>
-               </span>
-             </li>`).join('\n')}
-        </ul>
-      </div>
-    `
-    return filesTemplate
-  }
-
+  /* Data Retrieval Methods */
   var _retrieveData = function(url) {
     return new Promise(function(resolve, reject){
       var xhr = new XMLHttpRequest();
@@ -74,29 +54,7 @@ var SubjectLoader = (function() {
     })
   }
 
-  var _loadSubjectList = function() {
-    var subjectsList = document.querySelector('.subjects')
-    _getSubjects()
-    .then(res => {
-      for(var department of res) {
-        var subjects = JSON.parse(department).files
-        for(var subject of subjects) {
-          var li = document.createElement('li')
-          li.classList.add('subject')
-          li.innerHTML = subject.name
-          var a = document.createElement('a')
-          a.setAttribute('href', subject.id)
-          li.appendChild(a)
-          subjectsList.appendChild(li)
-        }
-      }
-    })
-    .catch(err => {
-      return err
-    })
-  }
-
-  var dropDown = function() {
+  var _attachDepartmentEventHandlers = function() {
     var departmentItems = document.querySelectorAll('.department')
     for(var item of departmentItems) {
       var btn = item.querySelector('.department_link')
@@ -110,7 +68,28 @@ var SubjectLoader = (function() {
     }
   }
 
-  var _spinner2 = function() {
+  var _buildFolderView = function(folderObj, name) {
+    var files = folderObj.files.sort(_sorter)
+    let filesTemplate = `
+      <div class="folders">
+        <h1 class="foldername">${name}</h1>
+        <ul class="items">
+          ${files.map(file =>
+            `<li class="item">
+               <a href="https://drive.google.com/open?id=${file.id}" target="_blank">
+                 <i class="fa fa-file-pdf-o fa-4x"></i>
+                 <span class="item-name">
+                     ${file.name}
+                 </span>
+               </a>
+             </li>`).join('\n')}
+        </ul>
+      </div>
+    `
+    return filesTemplate
+  }
+
+  var _buildFolderSpinner = function() {
     var spinnerDiv = `
   <div class="sk-circle">
     <div class="sk-circle1 sk-child"></div>
@@ -130,26 +109,20 @@ var SubjectLoader = (function() {
     document.querySelector('main').innerHTML = spinnerDiv
   }
 
-  var _loadFiles = function(evt) {
+  var _loadSubjectFiles = function(evt) {
     var id = this.dataset.id
     var subjName = this.dataset.name
     var folderPromises = []
     var folderNames = []
+
+    _deselectAllSubjects()
+
     this.classList.add('open-subject')
 
-    if(document.querySelector('.modal')) {
-      var modal = document.querySelector('.modal')
-      var departments = document.querySelector('.departments')
-      var sidebar = document.querySelector('.sidebar')
-
-      sidebar.appendChild(departments)
-      departments.classList.toggle('open')
-      modal.parentNode.removeChild(modal)
-    }
+    _removeModal()
 
     _retrieveData(`${URL}/files/${id}/children`)
       .then(res => {
-        _spinner2()
         var folders = JSON.parse(res).files
         folders.sort(_sorter)
         folders.map(folder => {
@@ -175,7 +148,7 @@ var SubjectLoader = (function() {
       })
   }
 
-  var _buildMenu = function(res) {
+  var _buildSubjectList = function(res) {
     var departments = document.querySelectorAll('.department')
     var loader = document.querySelector('.spin_wrapper')
     loader.classList.toggle('hidden')
@@ -190,7 +163,7 @@ var SubjectLoader = (function() {
         li.innerHTML = subj.name
         li.setAttribute('data-name', subj.name)
         li.setAttribute('data-id', subj.id)
-        li.addEventListener('click', _loadFiles)
+        li.addEventListener('click', _loadSubjectFiles)
         departments[idx]
           .querySelector('.subjects')
           .appendChild(li)
@@ -198,42 +171,36 @@ var SubjectLoader = (function() {
     })
   }
 
+  var _removeModal = function() {
+    if(document.querySelector('.modal')) {
+      var modal = document.querySelector('.modal')
+      var departments = document.querySelector('.departments')
+      var sidebar = document.querySelector('.sidebar')
+
+      sidebar.appendChild(departments)
+      departments.classList.toggle('open')
+      modal.parentNode.removeChild(modal)
+    }
+    window.scrollTo(0,0)
+    _buildFolderSpinner()
+  }
+
+  var _deselectAllSubjects = function() {
+    var subjects = document.querySelectorAll('.subject')
+    for(var subject of subjects) {
+      if(subject.classList.contains('open-subject')) {
+        subject.classList.remove('open-subject')
+      }
+    }
+
+  }
+
   return {
-    init: _buildMenu,
+    init: _buildSubjectList,
     getSubjects: _getSubjects,
-    dropDownInit: dropDown
+    dropDownInit: _attachDepartmentEventHandlers
   }
 })();
-
-var viewSubj = document.querySelector('.toggleModal')
-viewSubj.addEventListener('click', function(evt) {
-  evt.preventDefault()
-  createModal()
-})
-
-var createModal = function() {
-  var m = document.createElement('div')
-  var x = document.createElement('button')
-  var departments = document.querySelector('.departments')
-
-  x.innerHTML = 'X'
-  x.addEventListener('click', function(evt) {
-    evt.preventDefault()
-    var sidebar = document.querySelector('.sidebar')
-    sidebar.appendChild(departments)
-    departments.classList.toggle('open')
-    document.querySelector('body').removeChild(document.querySelector('body').lastElementChild)
-  })
-
-  m.classList.add('modal')
-  m.appendChild(x)
-  m.appendChild(departments)
-
-  departments.classList.toggle('open')
-
-  document.querySelector('body').appendChild(m)
-}
-
 
 window.onload = function() {
   SubjectLoader.getSubjects()
@@ -245,4 +212,33 @@ window.onload = function() {
     console.log(err)
     alert('err')
   })
+
+  var viewSubj = document.querySelector('.toggleModal')
+  viewSubj.addEventListener('click', function(evt) {
+    evt.preventDefault()
+    createModal()
+  })
+
+  var createModal = function() {
+    var m = document.createElement('div')
+    var x = document.createElement('button')
+    var departments = document.querySelector('.departments')
+
+    x.innerHTML = 'X'
+    x.addEventListener('click', function(evt) {
+      evt.preventDefault()
+      var sidebar = document.querySelector('.sidebar')
+      sidebar.appendChild(departments)
+      departments.classList.toggle('open')
+      document.querySelector('body').removeChild(document.querySelector('body').lastElementChild)
+    })
+
+    m.classList.add('modal')
+    m.appendChild(x)
+    m.appendChild(departments)
+
+    departments.classList.toggle('open')
+
+    document.querySelector('body').appendChild(m)
+  }
 }
