@@ -1,5 +1,5 @@
 CACHE MANIFEST
-# Version: 12/30/16 14:42
+# Version: 12/30/16 15:42
 
 
 index.html
@@ -8,7 +8,7 @@ css/colors.css
 css/font.css
 css/style.css
 app.js
-pouchdb-6.1.0.js
+pouchdb-6.1.0.min.js
 fonts/fontawesome-webfont.eot
 fonts/fontawesome-webfont.svg
 fonts/fontawesome-webfont.ttf
