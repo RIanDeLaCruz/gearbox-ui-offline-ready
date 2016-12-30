@@ -1,5 +1,5 @@
 CACHE MANIFEST
-# Version: 12/30/16 15:42
+# Version: 12/30/16 21:00
 
 
 index.html
@@ -15,6 +15,8 @@ fonts/fontawesome-webfont.ttf
 fonts/fontawesome-webfont.woff
 fonts/fontawesome-webfont.woff2
 fonts/FontAwesome.otf
+fonts/OpenSans-Regular.ttf
+fonts/FuturaLT-Bold.ttf
 
 NETWORK:
 *
