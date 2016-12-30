@@ -16,23 +16,37 @@ var _sorter = function(a, b) {
 
 var SubjectLoader = (function() {
   const URL = 'http://gearboxdev.iandelacruz.me'
+  var db = new PouchDB('gearbox_cache')
 
   /* Data Retrieval Methods */
   var _retrieveData = function(url) {
-    return new Promise(function(resolve, reject){
-      var xhr = new XMLHttpRequest();
-      xhr.open('GET', url);
-      xhr.onload = function() {
-        if(this.status >= 200 && this.status < 300) {
-          resolve(xhr.response);
-        } else {
-          reject({
-            status: this.status,
-            statusText: xhr.statusText
-          })
+    return db.get(url)
+    .then(doc => {
+      console.log('From Cache')
+      return Promise.resolve(doc.val)
+    })
+    .catch(err => {
+      return new Promise(function(resolve, reject){
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', url);
+        xhr.onload = function() {
+          if(this.status >= 200 && this.status < 300) {
+            db.put({
+              _id: url,
+              val: xhr.response
+            })
+            .then(res => {console.log('Saved in DB')})
+            .catch(err => {console.warn(err)})
+            resolve(xhr.response);
+          } else {
+            reject({
+              status: this.status,
+              statusText: xhr.statusText
+            })
+          }
         }
-      }
-      xhr.send();
+        xhr.send();
+      })
     })
   }
 
@@ -202,6 +216,17 @@ var SubjectLoader = (function() {
   }
 })();
 
+var PouchCache = (function() {
+  var db = new PouchDB('gearbox_cache')
+
+  var init = function() {
+  }
+
+  return {
+    init: init
+  }
+})()
+
 window.onload = function() {
   SubjectLoader.getSubjects()
   .then(res => {
@@ -241,15 +266,15 @@ window.onload = function() {
 
     document.querySelector('body').appendChild(m)
   }
-  if('serviceWorker' in navigator) {
-    navigator.serviceWorker.register(
-      'sw.js',
-      {scope: '/'})
-      .then(reg => {
-        console.log(`SUCCESS: ${reg.scope}`)
-      })
-      .catch(err => {
-        console.log(`ERR: ${err}`)
-      })
-  }
+  //if('serviceWorker' in navigator) {
+    //navigator.serviceWorker.register(
+      //'sw.js',
+      //{scope: '/'})
+      //.then(reg => {
+        //console.log(`SUCCESS: ${reg.scope}`)
+      //})
+      //.catch(err => {
+        //console.log(`ERR: ${err}`)
+      //})
+  //}
 }
