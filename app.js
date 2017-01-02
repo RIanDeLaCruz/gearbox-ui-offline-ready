@@ -15,7 +15,7 @@ var _sorter = function(a, b) {
 }
 
 var SubjectLoader = (function() {
-  const URL = 'https://gearboxdev.iandelacruz.me'
+  var URL = 'https://gearboxdev.iandelacruz.me'
   var db = new PouchDB('gearbox_cache')
 
   /* Data Retrieval Methods */
