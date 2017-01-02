@@ -115,6 +115,7 @@ var SubjectLoader = (function() {
       folders += '<span class="item-name">'+file.name+'</span>'
       folders += '</a></li>'
     }
+    folders += '</ul></div>'
     //return filesTemplate
     return folders
   }
