@@ -52,13 +52,13 @@ var SubjectLoader = (function() {
 
   var _getSubjects = function() {
     var subjectsPromises = []
-    return _retrieveData('http://gearboxdev.iandelacruz.me')
+    return _retrieveData('https://gearboxdev.iandelacruz.me')
     .then(res => {
       var departments = JSON.parse(res).files
       departments.sort(_sorter)
       departments.map((curr, index, arr) => {
         subjectsPromises.push(
-          _retrieveData(`http://gearboxdev.iandelacruz.me/files/${curr.id}/children`)
+          _retrieveData(`https://gearboxdev.iandelacruz.me/files/${curr.id}/children`)
         )
       })
       return Promise.all(subjectsPromises)
