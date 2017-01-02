@@ -21,11 +21,11 @@ var SubjectLoader = (function() {
   /* Data Retrieval Methods */
   var _retrieveData = function(url) {
     return db.get(url)
-    .then(doc => {
+    .then(function(doc) {
       console.log('From Cache')
       return Promise.resolve(doc.val)
     })
-    .catch(err => {
+    .catch(function(err){
       return new Promise(function(resolve, reject){
         var xhr = new XMLHttpRequest();
         xhr.open('GET', url);
@@ -35,8 +35,8 @@ var SubjectLoader = (function() {
               _id: url,
               val: xhr.response
             })
-            .then(res => {console.log('Saved in DB')})
-            .catch(err => {console.warn(err)})
+            .then(function(res) {console.log('Saved in DB')})
+            .catch(function(err) {console.warn(err)})
             resolve(xhr.response);
           } else {
             reject({
@@ -53,17 +53,17 @@ var SubjectLoader = (function() {
   var _getSubjects = function() {
     var subjectsPromises = []
     return _retrieveData('https://gearboxdev.iandelacruz.me')
-    .then(res => {
+    .then(function(res){
       var departments = JSON.parse(res).files
       departments.sort(_sorter)
-      departments.map((curr, index, arr) => {
+      departments.map(function(curr, index, arr) {
         subjectsPromises.push(
           _retrieveData(`https://gearboxdev.iandelacruz.me/files/${curr.id}/children`)
         )
       })
       return Promise.all(subjectsPromises)
     })
-    .catch(err => {
+    .catch(function(err) {
       return err
     })
   }
@@ -84,7 +84,7 @@ var SubjectLoader = (function() {
 
   var _buildFolderView = function(folderObj, name) {
     var files = folderObj.files.sort(_sorter)
-    let filesTemplate = `
+    /*let filesTemplate = `
       <div class="folders">
         <h1 class="foldername">${name}</h1>
         <ul class="items">
@@ -100,7 +100,21 @@ var SubjectLoader = (function() {
         </ul>
       </div>
     `
-    return filesTemplate
+    */
+    var folders = '<div class="folders">'
+    folders += '<h1 class="foldername">'
+    folders += name
+    folders += '</h1>'
+    folders += '<ul class="items">'
+    for(var file of files) {
+      folders += '<li class="item">'
+      folders += '<a href="https://drive.google.com/open?id='+file.id+'" target="_blank">'
+      folders += '<i class="fa fa-file-pdf-o fa-4x"></i>'
+      folders += '<span class="item-name">'+file.name+'</span>'
+      folders += '</a></li>'
+    }
+    //return filesTemplate
+    return folders
   }
 
   var _buildFolderSpinner = function() {
@@ -136,23 +150,23 @@ var SubjectLoader = (function() {
     _removeModal()
 
     _retrieveData(`${URL}/files/${id}/children`)
-      .then(res => {
+      .then(function(res) {
         var folders = JSON.parse(res).files
         folders.sort(_sorter)
-        folders.map(folder => {
+        folders.map(function(folder) {
           folderPromises.push(_retrieveData(`${URL}/files/${folder.id}/children`))
           folderNames.push(folder.name)
         })
         return Promise.all(folderPromises)
       })
-      .then(res => {
+      .then(function(res) {
         var mainBody = ''
         mainBody += `
         <div class="subjectTitleWrapper">
           <h2 class="subjectTitle">${subjName}</h2>
         </div>
         `
-        var files = res.map((file, idx, arr) => {
+        var files = res.map(function(file, idx, arr) {
           mainBody += _buildFolderView(
             JSON.parse(file),
             folderNames[idx]
@@ -167,8 +181,8 @@ var SubjectLoader = (function() {
     var loader = document.querySelector('.spin_wrapper')
     loader.classList.toggle('hidden')
 
-    var n = res.map((curr, idx, arr) => JSON.parse(curr))
-    n.map((curr, idx, arr) => {
+    var n = res.map(function(curr, idx, arr) { return JSON.parse(curr) })
+    n.map(function(curr, idx, arr) {
       var subjects = curr.files
       subjects.sort(_sorter)
       for(var subj of subjects) {
@@ -229,11 +243,11 @@ var PouchCache = (function() {
 
 window.onload = function() {
   SubjectLoader.getSubjects()
-  .then(res => {
+  .then(function(res) {
     SubjectLoader.init(res)
     SubjectLoader.dropDownInit()
   })
-  .catch(err => {
+  .catch(function(err){
     console.log(err)
     alert('err')
   })
