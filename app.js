@@ -70,7 +70,9 @@ var SubjectLoader = (function() {
 
   var _attachDepartmentEventHandlers = function() {
     var departmentItems = document.querySelectorAll('.department')
-    for(var item of departmentItems) {
+    //for(var item of departmentItems) {
+    for(var i = 0; i < departmentItems.length; i++) {
+      var item = departmentItems[i]
       var btn = item.querySelector('.department_link')
       btn.addEventListener('click', function(evt) {
         evt.preventDefault()
