@@ -217,7 +217,8 @@ var SubjectLoader = (function() {
 
   var _deselectAllSubjects = function() {
     var subjects = document.querySelectorAll('.subject')
-    for(var subject of subjects) {
+    for(var i = 0; i < subjects.length; i++ ) {
+      var subject = subjects[i]
       if(subject.classList.contains('open-subject')) {
         subject.classList.remove('open-subject')
       }
