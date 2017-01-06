@@ -15,48 +15,64 @@ var _sorter = function(a, b) {
 }
 
 var SubjectLoader = (function() {
-  const URL = 'http://gearboxdev.iandelacruz.me'
+  var URL = 'https://gearboxdev.iandelacruz.me'
+  var db = new PouchDB('gearbox_cache', {size: 50})
 
   /* Data Retrieval Methods */
   var _retrieveData = function(url) {
-    return new Promise(function(resolve, reject){
-      var xhr = new XMLHttpRequest();
-      xhr.open('GET', url);
-      xhr.onload = function() {
-        if(this.status >= 200 && this.status < 300) {
-          resolve(xhr.response);
-        } else {
-          reject({
-            status: this.status,
-            statusText: xhr.statusText
-          })
+    return db.get(url)
+    .then(function(doc) {
+      console.log('From Cache')
+      return Promise.resolve(doc.val)
+    })
+    .catch(function(err){
+      return new Promise(function(resolve, reject){
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', url);
+        xhr.onload = function() {
+          if(this.status >= 200 && this.status < 300) {
+            db.put({
+              _id: url,
+              val: xhr.response
+            })
+            .then(function(res) {console.log('Saved in DB')})
+            .catch(function(err) {console.warn(err)})
+            resolve(xhr.response);
+          } else {
+            reject({
+              status: this.status,
+              statusText: xhr.statusText
+            })
+          }
         }
-      }
-      xhr.send();
+        xhr.send();
+      })
     })
   }
 
   var _getSubjects = function() {
     var subjectsPromises = []
-    return _retrieveData('http://gearboxdev.iandelacruz.me')
-    .then(res => {
+    return _retrieveData('https://gearboxdev.iandelacruz.me')
+    .then(function(res){
       var departments = JSON.parse(res).files
       departments.sort(_sorter)
-      departments.map((curr, index, arr) => {
+      departments.map(function(curr, index, arr) {
         subjectsPromises.push(
-          _retrieveData(`http://gearboxdev.iandelacruz.me/files/${curr.id}/children`)
+          _retrieveData(`https://gearboxdev.iandelacruz.me/files/${curr.id}/children`)
         )
       })
       return Promise.all(subjectsPromises)
     })
-    .catch(err => {
+    .catch(function(err) {
       return err
     })
   }
 
   var _attachDepartmentEventHandlers = function() {
     var departmentItems = document.querySelectorAll('.department')
-    for(var item of departmentItems) {
+    //for(var item of departmentItems) {
+    for(var i = 0; i < departmentItems.length; i++) {
+      var item = departmentItems[i]
       var btn = item.querySelector('.department_link')
       btn.addEventListener('click', function(evt) {
         evt.preventDefault()
@@ -70,7 +86,7 @@ var SubjectLoader = (function() {
 
   var _buildFolderView = function(folderObj, name) {
     var files = folderObj.files.sort(_sorter)
-    let filesTemplate = `
+    /*let filesTemplate = `
       <div class="folders">
         <h1 class="foldername">${name}</h1>
         <ul class="items">
@@ -86,7 +102,22 @@ var SubjectLoader = (function() {
         </ul>
       </div>
     `
-    return filesTemplate
+    */
+    var folders = '<div class="folders">'
+    folders += '<h1 class="foldername">'
+    folders += name
+    folders += '</h1>'
+    folders += '<ul class="items">'
+    for(var file of files) {
+      folders += '<li class="item">'
+      folders += '<a href="https://drive.google.com/open?id='+file.id+'" target="_blank">'
+      folders += '<i class="fa fa-file-pdf-o fa-4x"></i>'
+      folders += '<span class="item-name">'+file.name+'</span>'
+      folders += '</a></li>'
+    }
+    folders += '</ul></div>'
+    //return filesTemplate
+    return folders
   }
 
   var _buildFolderSpinner = function() {
@@ -122,23 +153,23 @@ var SubjectLoader = (function() {
     _removeModal()
 
     _retrieveData(`${URL}/files/${id}/children`)
-      .then(res => {
+      .then(function(res) {
         var folders = JSON.parse(res).files
         folders.sort(_sorter)
-        folders.map(folder => {
+        folders.map(function(folder) {
           folderPromises.push(_retrieveData(`${URL}/files/${folder.id}/children`))
           folderNames.push(folder.name)
         })
         return Promise.all(folderPromises)
       })
-      .then(res => {
+      .then(function(res) {
         var mainBody = ''
         mainBody += `
         <div class="subjectTitleWrapper">
           <h2 class="subjectTitle">${subjName}</h2>
         </div>
         `
-        var files = res.map((file, idx, arr) => {
+        var files = res.map(function(file, idx, arr) {
           mainBody += _buildFolderView(
             JSON.parse(file),
             folderNames[idx]
@@ -153,8 +184,8 @@ var SubjectLoader = (function() {
     var loader = document.querySelector('.spin_wrapper')
     loader.classList.toggle('hidden')
 
-    var n = res.map((curr, idx, arr) => JSON.parse(curr))
-    n.map((curr, idx, arr) => {
+    var n = res.map(function(curr, idx, arr) { return JSON.parse(curr) })
+    n.map(function(curr, idx, arr) {
       var subjects = curr.files
       subjects.sort(_sorter)
       for(var subj of subjects) {
@@ -187,7 +218,8 @@ var SubjectLoader = (function() {
 
   var _deselectAllSubjects = function() {
     var subjects = document.querySelectorAll('.subject')
-    for(var subject of subjects) {
+    for(var i = 0; i < subjects.length; i++ ) {
+      var subject = subjects[i]
       if(subject.classList.contains('open-subject')) {
         subject.classList.remove('open-subject')
       }
@@ -202,13 +234,24 @@ var SubjectLoader = (function() {
   }
 })();
 
+var PouchCache = (function() {
+  var db = new PouchDB('gearbox_cache')
+
+  var init = function() {
+  }
+
+  return {
+    init: init
+  }
+})()
+
 window.onload = function() {
   SubjectLoader.getSubjects()
-  .then(res => {
+  .then(function(res) {
     SubjectLoader.init(res)
     SubjectLoader.dropDownInit()
   })
-  .catch(err => {
+  .catch(function(err){
     console.log(err)
     alert('err')
   })
@@ -241,15 +284,15 @@ window.onload = function() {
 
     document.querySelector('body').appendChild(m)
   }
-  if('serviceWorker' in navigator) {
-    navigator.serviceWorker.register(
-      'sw.js',
-      {scope: '/'})
-      .then(reg => {
-        console.log(`SUCCESS: ${reg.scope}`)
-      })
-      .catch(err => {
-        console.log(`ERR: ${err}`)
-      })
-  }
+  //if('serviceWorker' in navigator) {
+    //navigator.serviceWorker.register(
+      //'sw.js',
+      //{scope: '/'})
+      //.then(reg => {
+        //console.log(`SUCCESS: ${reg.scope}`)
+      //})
+      //.catch(err => {
+        //console.log(`ERR: ${err}`)
+      //})
+  //}
 }

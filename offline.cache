@@ -1,0 +1,23 @@
+CACHE MANIFEST
+# Version: 1/02/17 21:30:00
+
+
+index.html
+css/files.min.css
+css/colors.css
+css/font.css
+css/style.css
+app.js
+pouchdb-6.1.0.min.js
+fonts/fontawesome-webfont.eot
+fonts/fontawesome-webfont.svg
+fonts/fontawesome-webfont.ttf
+fonts/fontawesome-webfont.woff
+fonts/fontawesome-webfont.woff2
+fonts/FontAwesome.otf
+fonts/OpenSans-Regular.ttf
+fonts/FuturaLT-Bold.ttf
+https://cdn.polyfill.io/v2/polyfill.min.js
+
+NETWORK:
+*
