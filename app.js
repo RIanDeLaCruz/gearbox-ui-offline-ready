@@ -111,7 +111,6 @@ var SubjectLoader = (function() {
     for(var file of files) {
       folders += '<li class="item">'
       folders += '<a href="https://drive.google.com/open?id='+file.id+'" target="_blank">'
-      folders += '<i class="fa fa-file-pdf-o fa-4x"></i>'
       folders += '<span class="item-name">'+file.name+'</span>'
       folders += '</a></li>'
     }
