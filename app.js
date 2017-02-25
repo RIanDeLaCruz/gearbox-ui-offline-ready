@@ -16,7 +16,7 @@ var _sorter = function(a, b) {
 
 var SubjectLoader = (function() {
   var URL = 'https://gearboxdev.iandelacruz.me'
-  var db = new PouchDB('gearbox_cache', {size: 50})
+  var db = new PouchDB('gearbox_cache')
 
   /* Data Retrieval Methods */
   var _retrieveData = function(url) {
@@ -111,7 +111,6 @@ var SubjectLoader = (function() {
     for(var file of files) {
       folders += '<li class="item">'
       folders += '<a href="https://drive.google.com/open?id='+file.id+'" target="_blank">'
-      folders += '<i class="fa fa-file-pdf-o fa-4x"></i>'
       folders += '<span class="item-name">'+file.name+'</span>'
       folders += '</a></li>'
     }
